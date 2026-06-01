@@ -2,16 +2,16 @@
 main.py — News Extraction Bot entry point.
 Run: python main.py
 
-Fetches news from 14 RSS feeds every 5–30 min, deduplicates headlines,
-identifies first breakers, and stores everything in news.db + news_feed.csv.
-No posting, no external API keys required.
+Starts all feed workers and the web GUI in a single process.
+Workers run as daemon threads; the GUI server blocks the main thread.
 """
 
+import contextlib
 import logging
 import signal
 import sys
-import time
 
+import gui
 import storage
 from logger import setup_logger
 from scheduler import NewsScheduler
@@ -21,15 +21,14 @@ log = logging.getLogger("main")
 
 
 def _handle_shutdown(sig, frame):
-    try:
+    with contextlib.suppress(Exception):
         stats = storage.get_stats()
-        log.info("Shutdown signal received — stopping bot.")
-        log.info(f"Session summary: {stats['total']} articles saved | "
-                 f"{stats['breakers']} breakers | "
-                 f"{stats['duplicates']} duplicates")
-        log.info(f"By category: {stats['by_category']}")
-    except Exception:
-        pass
+        log.info("Shutdown signal received — stopping.")
+        log.info(
+            f"Session summary: {stats['total']} articles | "
+            f"{stats['breakers']} breakers | "
+            f"{stats['duplicates']} duplicates"
+        )
     sys.exit(0)
 
 
@@ -49,6 +48,6 @@ if __name__ == "__main__":
     scheduler = NewsScheduler()
     scheduler.start()
 
-    # Keep main thread alive; workers are daemon threads
-    while True:
-        time.sleep(60)
+    # GUI blocks the main thread; all scheduler workers are daemon threads
+    # and will exit automatically when the GUI shuts down.
+    gui.main()

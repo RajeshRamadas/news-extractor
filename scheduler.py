@@ -74,9 +74,14 @@ class NewsScheduler:
     """Starts one daemon thread per feed category."""
 
     WORKERS = [
-        ("market",   config.FETCH_INTERVAL_MARKET),
-        ("national", config.FETCH_INTERVAL_NATIONAL),
-        ("global",   config.FETCH_INTERVAL_GLOBAL),
+        ("market",               config.FETCH_INTERVAL_MARKET),
+        ("national",             config.FETCH_INTERVAL_NATIONAL),
+        ("global",               config.FETCH_INTERVAL_GLOBAL),
+        ("sports",               config.FETCH_INTERVAL_SPORTS),
+        ("entertainment_india",  config.FETCH_INTERVAL_ENTERTAINMENT),
+        ("entertainment_global", config.FETCH_INTERVAL_ENTERTAINMENT),
+        ("economics_india",      config.FETCH_INTERVAL_ECONOMICS),
+        ("economics_global",     config.FETCH_INTERVAL_ECONOMICS),
     ]
 
     def start(self):

@@ -141,7 +141,13 @@ def _make_like_clauses(column: str, terms: list[str], params: list) -> str:
         params.append(f"%{term}%")
     return " OR ".join(clauses)
 
-def get_latest(limit: int = 20, category: str = None, tag: str = None, keyword_terms: list = None) -> list:
+def _is_hot(title: str) -> bool:
+    t = (title or "").lower()
+    return any(kw in t for kw in config.HOT_KEYWORDS)
+
+
+def get_latest(limit: int = 20, category: str = None, tag: str = None,
+               keyword_terms: list = None, hot_only: bool = False) -> list:
     params = []
     where = "WHERE 1=1"
     if category:
@@ -154,9 +160,17 @@ def get_latest(limit: int = 20, category: str = None, tag: str = None, keyword_t
         kw_clause = " OR ".join("lower(title) LIKE ?" for _ in keyword_terms)
         where += f" AND ({kw_clause})"
         params.extend(f"%{kw.lower()}%" for kw in keyword_terms)
+    if hot_only:
+        hot_clause = " OR ".join("lower(title) LIKE ?" for _ in config.HOT_KEYWORDS)
+        where += f" AND ({hot_clause})"
+        params.extend(f"%{kw}%" for kw in config.HOT_KEYWORDS)
     params.append(limit)
-    with _get_conn() as conn:
-        return [dict(r) for r in conn.execute(f"SELECT * FROM articles {where} ORDER BY saved_at DESC LIMIT ?", params).fetchall()]
+    rows = [dict(r) for r in _get_conn().execute(
+        f"SELECT * FROM articles {where} ORDER BY saved_at DESC LIMIT ?", params
+    ).fetchall()]
+    for row in rows:
+        row["is_hot"] = _is_hot(row.get("title", ""))
+    return rows
 
 
 def get_stats() -> dict:

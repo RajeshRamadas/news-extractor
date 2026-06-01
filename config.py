@@ -6,9 +6,12 @@ Each feed has a 'tags' list — saved to DB and CSV alongside every article.
 # ==========================================
 # FETCH INTERVALS (minutes) — all run 24/7
 # ==========================================
-FETCH_INTERVAL_MARKET   = 5
-FETCH_INTERVAL_NATIONAL = 10   # increased frequency for India
-FETCH_INTERVAL_GLOBAL   = 30
+FETCH_INTERVAL_MARKET        = 5
+FETCH_INTERVAL_NATIONAL      = 10
+FETCH_INTERVAL_GLOBAL        = 30
+FETCH_INTERVAL_SPORTS        = 30
+FETCH_INTERVAL_ENTERTAINMENT = 60
+FETCH_INTERVAL_ECONOMICS     = 20
 
 ARTICLES_PER_FEED       = 10
 REQUEST_TIMEOUT_SEC     = 15
@@ -32,6 +35,43 @@ CSV_FILE    = "news_feed.csv"
 # KEYWORD FILTERS — leave empty to collect everything
 # ==========================================
 KEYWORDS = []
+
+HOT_KEYWORDS = [
+    "breaking", "break",
+    "crash", "crashes", "crashed", "collapse", "collapses",
+    "surge", "surges", "surged", "soars", "soar",
+    "record high", "record low", "all-time high", "all-time low",
+    "ban", "banned",
+    "crisis", "emergency",
+    "exclusive",
+    "alert", "warning",
+    "killed", "dead", "death", "dies",
+    "arrested", "arrest",
+    "resign", "resigns", "resigned",
+    "fraud", "scandal",
+    "hike", "rate cut",
+    "wins", "victory",
+    "launches",
+]
+
+# Per-category keyword whitelists — articles whose titles contain NONE of these
+# words are dropped at fetch time. Leave a category out to accept everything.
+CATEGORY_FILTERS = {
+    "entertainment_india": [
+        "film", "movie", "actor", "actress", "bollywood", "cinema", "music",
+        "song", "album", "show", "series", "celebrity", "star", "award",
+        "ott", "netflix", "amazon prime", "disney", "hotstar", "zee5",
+        "trailer", "release", "box office", "cast", "director", "screen",
+        "web series", "reality", "television", "tv show", "drama",
+    ],
+    "entertainment_global": [
+        "film", "movie", "actor", "actress", "hollywood", "cinema", "music",
+        "song", "album", "show", "series", "celebrity", "star", "award",
+        "netflix", "amazon", "disney", "hbo", "trailer", "box office",
+        "release", "cast", "director", "streaming", "tv show", "drama",
+        "gaming", "game",
+    ],
+}
 
 REAL_ESTATE_KEYWORDS = [
     "real estate",
@@ -191,7 +231,7 @@ FEEDS = {
         {"name": "India Today - Ent",    "url": "https://www.indiatoday.in/rss/1206575",                                           "tags": ["entertainment", "india"]},
         {"name": "NDTV Movies",          "url": "https://feeds.feedburner.com/ndtvmovies",                                         "tags": ["entertainment", "bollywood", "india"]},
         {"name": "Koimoi",               "url": "https://www.koimoi.com/feed/",                                                    "tags": ["entertainment", "bollywood", "india"]},
-        {"name": "Mid-Day Entertainment","url": "https://www.mid-day.com/rss/articles/latest",                                     "tags": ["entertainment", "india"]},
+        {"name": "Mid-Day Entertainment","url": "https://www.mid-day.com/rss/entertainment",                                       "tags": ["entertainment", "india"]},
     ],
 
     # ------------------------------------------

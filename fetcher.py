@@ -95,10 +95,22 @@ def fetch_feed(feed: dict) -> list:
     return []
 
 
+def _passes_filter(title: str, whitelist: list) -> bool:
+    t = title.lower()
+    return any(kw in t for kw in whitelist)
+
+
 def fetch_category(category: str) -> list:
     """Fetch every feed in a category. Returns merged article list."""
     feeds = config.FEEDS.get(category, [])
+    whitelist = config.CATEGORY_FILTERS.get(category)
     all_articles = []
     for feed in feeds:
-        all_articles.extend(fetch_feed(feed))
+        articles = fetch_feed(feed)
+        if whitelist:
+            filtered = [a for a in articles if _passes_filter(a["title"], whitelist)]
+            if dropped := len(articles) - len(filtered):
+                log.debug(f"  [{feed['name']}] filtered out {dropped} off-topic articles")
+            articles = filtered
+        all_articles.extend(articles)
     return all_articles
