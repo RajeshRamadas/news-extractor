@@ -6,6 +6,7 @@ Tags are stored as a comma-separated string in both outputs.
 import csv
 import logging
 import os
+import re
 import sqlite3
 from datetime import datetime, timezone
 
@@ -134,12 +135,14 @@ def store(articles: list, category: str) -> int:
     return len(articles)
 
 
-def _make_like_clauses(column: str, terms: list[str], params: list) -> str:
-    clauses = []
-    for term in terms:
-        clauses.append(f"lower({column}) LIKE ?")
-        params.append(f"%{term}%")
-    return " OR ".join(clauses)
+def _any_word_match(title: str, keywords: list) -> bool:
+    """True if any keyword appears as a whole word in title (not a substring of another word)."""
+    t = title.lower()
+    for kw in keywords:
+        if re.search(r'(?<![a-zA-Z])' + re.escape(kw.lower()) + r'(?![a-zA-Z])', t):
+            return True
+    return False
+
 
 def _is_hot(title: str) -> bool:
     t = (title or "").lower()
@@ -157,6 +160,8 @@ def get_latest(limit: int = 20, category: str = None, tag: str = None,
         where += " AND (',' || tags || ',' LIKE ?)"
         params.append(f"%,{tag},%")
     if keyword_terms:
+        # SQL LIKE is a broad pre-filter; Python post-filter below enforces word boundaries
+        # (e.g. "bse" must not match "CBSE" or "Obsession")
         kw_clause = " OR ".join("lower(title) LIKE ?" for _ in keyword_terms)
         where += f" AND ({kw_clause})"
         params.extend(f"%{kw.lower()}%" for kw in keyword_terms)
@@ -164,10 +169,16 @@ def get_latest(limit: int = 20, category: str = None, tag: str = None,
         hot_clause = " OR ".join("lower(title) LIKE ?" for _ in config.HOT_KEYWORDS)
         where += f" AND ({hot_clause})"
         params.extend(f"%{kw}%" for kw in config.HOT_KEYWORDS)
-    params.append(limit)
+    # Fetch extra rows so that false positives removed by word-boundary filter don't
+    # leave us short of the requested limit.
+    sql_limit = (limit * 5) if keyword_terms else limit
+    params.append(sql_limit)
     rows = [dict(r) for r in _get_conn().execute(
         f"SELECT * FROM articles {where} ORDER BY saved_at DESC LIMIT ?", params
     ).fetchall()]
+    if keyword_terms:
+        rows = [r for r in rows if _any_word_match(r.get("title", ""), keyword_terms)]
+        rows = rows[:limit]
     for row in rows:
         row["is_hot"] = _is_hot(row.get("title", ""))
     return rows
