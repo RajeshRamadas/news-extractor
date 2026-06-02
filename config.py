@@ -57,6 +57,30 @@ HOT_KEYWORDS = [
 # Per-category keyword whitelists — articles whose titles contain NONE of these
 # words are dropped at fetch time. Leave a category out to accept everything.
 CATEGORY_FILTERS = {
+    "market": [
+        "stock", "stocks", "share", "shares", "equity", "equities",
+        "nifty", "sensex", "nasdaq", "dow", "s&p", "ftse", "nikkei",
+        "market", "markets", "trading", "trade", "trader", "invest",
+        "investing", "investor", "portfolio",
+        "ipo", "listing", "demat",
+        "fund", "funds", "mutual fund", "etf",
+        "rally", "bull", "bear", "correction", "selloff", "sell-off",
+        "earnings", "revenue", "profit", "loss", "quarterly", "results",
+        "dividend", "buyback", "bonus",
+        "bond", "yield", "treasury",
+        "rate", "interest rate", "rbi", "fed", "sebi", "monetary",
+        "inflation", "deflation", "gdp",
+        "bank", "banking", "nbfc", "lender",
+        "commodity", "commodities", "gold", "silver", "crude", "oil",
+        "forex", "currency", "dollar", "rupee", "exchange rate",
+        "crypto", "bitcoin", "blockchain",
+        "futures", "options", "derivatives",
+        "index", "indices", "benchmark",
+        "fiscal", "quarter", "annual report",
+        "valuation", "pe ratio", "market cap",
+        "acquisition", "merger", "takeover", "stake",
+        "vc", "venture capital", "private equity", "funding round",
+    ],
     "entertainment_india": [
         "film", "movie", "actor", "actress", "bollywood", "cinema", "music",
         "song", "album", "show", "series", "celebrity", "star", "award",
