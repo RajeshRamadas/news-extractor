@@ -296,16 +296,43 @@ HTML = """
       <div class="exchange-wrap">
         <select class="exchange-select" id="exchange-select">
           <option value="">— Select Exchange —</option>
-          <option value="bse">BSE (Sensex)</option>
-          <option value="nse">NSE (Nifty)</option>
-          <option value="nyse">NYSE</option>
-          <option value="nasdaq">NASDAQ</option>
-          <option value="lse">LSE (FTSE)</option>
-          <option value="tse">Tokyo (Nikkei)</option>
-          <option value="sse">Shanghai (CSI)</option>
-          <option value="hkex">Hong Kong (Hang Seng)</option>
-          <option value="euronext">Euronext (CAC/DAX)</option>
-          <option value="sgx">SGX (Singapore)</option>
+          <optgroup label="🇺🇸 United States">
+            <option value="nyse">NYSE</option>
+            <option value="nasdaq">NASDAQ</option>
+          </optgroup>
+          <optgroup label="🇨🇦 Canada">
+            <option value="tsx">TSX (S&P/TSX)</option>
+          </optgroup>
+          <optgroup label="🇬🇧 United Kingdom">
+            <option value="lse">LSE (FTSE 100)</option>
+          </optgroup>
+          <optgroup label="🇩🇪 Germany">
+            <option value="xetra">XETRA (DAX)</option>
+          </optgroup>
+          <optgroup label="🇦🇺 Australia">
+            <option value="asx">ASX (S&P/ASX 200)</option>
+          </optgroup>
+          <optgroup label="Other Major Markets">
+            <option value="bse">BSE (Sensex)</option>
+            <option value="nse">NSE (Nifty)</option>
+            <option value="tse">Tokyo (Nikkei)</option>
+            <option value="sse">Shanghai (CSI)</option>
+            <option value="hkex">Hong Kong (Hang Seng)</option>
+            <option value="euronext">Euronext (CAC 40)</option>
+            <option value="sgx">SGX (Singapore)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="nav-section-label" style="margin-top:6px;">Geographic News</div>
+      <div class="exchange-wrap">
+        <select class="exchange-select" id="country-select">
+          <option value="">— Select Country —</option>
+          <option value="us">🇺🇸 United States</option>
+          <option value="ca">🇨🇦 Canada</option>
+          <option value="uk">🇬🇧 United Kingdom</option>
+          <option value="de">🇩🇪 Germany</option>
+          <option value="au">🇦🇺 Australia</option>
         </select>
       </div>
     </div>
@@ -388,6 +415,7 @@ HTML = """
 
     let currentCategory = '';
     let currentExchange = '';
+    let currentCountry  = '';
     let allArticles = [];
     let countdown = 15;
     let countdownTimer = null;
@@ -413,7 +441,7 @@ HTML = """
         btn.innerHTML = `<span class="icon">${cat.icon}</span>${cat.label}`;
         btn.addEventListener('click', () => {
           currentCategory = cat.id;
-          currentExchange  = '';
+          currentExchange = '';
           document.getElementById('exchange-select').value = '';
           syncNav();
           fetchArticles();
@@ -423,7 +451,21 @@ HTML = """
 
       document.getElementById('exchange-select').addEventListener('change', e => {
         currentExchange = e.target.value;
-        if (currentExchange) { currentCategory = ''; syncNav(); fetchArticles(); }
+        if (currentExchange) {
+          currentCategory = '';
+          currentCountry  = '';
+          document.getElementById('country-select').value = '';
+        }
+        syncNav();
+        fetchArticles();
+      });
+
+      document.getElementById('country-select').addEventListener('change', e => {
+        currentCountry = e.target.value;
+        if (currentCountry) currentExchange = '';
+        document.getElementById('exchange-select').value = '';
+        syncNav();
+        fetchArticles();
       });
 
       document.getElementById('search-input').addEventListener('input', renderArticles);
@@ -454,11 +496,17 @@ HTML = """
 
     function syncNav() {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.id === currentCategory));
-      const cat   = CATEGORIES.find(c => c.id === currentCategory);
-      const exSel = document.getElementById('exchange-select');
-      const title = currentExchange
-        ? exSel.options[exSel.selectedIndex].text
-        : (cat ? cat.label : 'All News');
+      const cat    = CATEGORIES.find(c => c.id === currentCategory);
+      const exSel  = document.getElementById('exchange-select');
+      const ctySel = document.getElementById('country-select');
+      let title;
+      if (currentExchange) {
+        title = exSel.options[exSel.selectedIndex].text;
+      } else {
+        const catLabel = cat ? cat.label : 'All News';
+        const ctyLabel = currentCountry ? ctySel.options[ctySel.selectedIndex].text : '';
+        title = ctyLabel ? `${catLabel} — ${ctyLabel}` : catLabel;
+      }
       document.getElementById('topbar-title').textContent = title;
     }
 
@@ -531,10 +579,12 @@ HTML = """
     async function fetchArticles() {
       document.getElementById('spinner').classList.add('active');
       document.getElementById('topbar-sub').textContent = 'Loading…';
-      let q = '';
-      if (currentExchange)              q = `?exchange=${encodeURIComponent(currentExchange)}`;
-      else if (currentCategory === '__hot__') q = '?hot=1';
-      else if (currentCategory)         q = `?category=${encodeURIComponent(currentCategory)}`;
+      const p = new URLSearchParams();
+      if (currentCountry)                     p.set('country',  currentCountry);
+      if (currentExchange)                    p.set('exchange', currentExchange);
+      if (currentCategory === '__hot__')      p.set('hot', '1');
+      else if (currentCategory)               p.set('category', currentCategory);
+      const q = p.toString() ? '?' + p.toString() : '';
       try {
         const res  = await fetch('/api/articles' + q);
         const data = await res.json();
@@ -583,16 +633,22 @@ def _api_articles(query):
     category    = query.get("category",  [""])[0].strip() or None
     tag         = query.get("tag",       [""])[0].strip() or None
     exchange_id = query.get("exchange",  [""])[0].strip() or None
+    country_id  = query.get("country",   [""])[0].strip() or None
     hot_only    = query.get("hot",       [""])[0].strip() == "1"
     keyword_terms = None
     if exchange_id and exchange_id in config.STOCK_EXCHANGES:
         keyword_terms = config.STOCK_EXCHANGES[exchange_id]["keywords"]
+        category = None  # exchange overrides category
+    elif country_id and country_id in config.GEO_COUNTRIES:
+        keyword_terms = config.GEO_COUNTRIES[country_id]["keywords"]
     articles = storage.get_latest(limit=100, category=category, tag=tag,
                                   keyword_terms=keyword_terms, hot_only=hot_only)
     if hot_only:
         label = "Hot News"
     elif exchange_id and exchange_id in config.STOCK_EXCHANGES:
         label = config.STOCK_EXCHANGES[exchange_id]["label"]
+    elif country_id and country_id in config.GEO_COUNTRIES:
+        label = config.GEO_COUNTRIES[country_id]["label"]
     else:
         label = tag or category or "all"
     return {"articles": articles, "category": label}

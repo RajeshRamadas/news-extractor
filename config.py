@@ -115,19 +115,39 @@ REAL_ESTATE_KEYWORDS = [
 ]
 
 # ==========================================
+# GEOGRAPHIC NEWS COUNTRIES
+# ==========================================
+GEO_COUNTRIES = {
+    "us":  {"label": "United States", "keywords": ["united states", "america", "american", "washington", "white house", "congress", "senate", "u.s."]},
+    "ca":  {"label": "Canada",        "keywords": ["canada", "canadian", "toronto", "ottawa", "montreal", "vancouver", "trudeau"]},
+    "uk":  {"label": "United Kingdom","keywords": ["uk", "united kingdom", "britain", "british", "england", "london", "parliament", "westminster"]},
+    "de":  {"label": "Germany",       "keywords": ["germany", "german", "berlin", "bundesbank", "scholz", "deutsche", "bundestag"]},
+    "au":  {"label": "Australia",     "keywords": ["australia", "australian", "sydney", "melbourne", "canberra", "asx", "albanese"]},
+}
+
+# ==========================================
 # TOP 10 STOCK EXCHANGES
 # ==========================================
 STOCK_EXCHANGES = {
-    "bse":      {"label": "BSE (Sensex)",          "keywords": ["bse", "sensex", "bombay stock exchange"]},
-    "nse":      {"label": "NSE (Nifty)",            "keywords": ["nse", "nifty", "national stock exchange"]},
+    # United States
     "nyse":     {"label": "NYSE",                   "keywords": ["nyse", "new york stock exchange", "wall street"]},
     "nasdaq":   {"label": "NASDAQ",                 "keywords": ["nasdaq"]},
-    "lse":      {"label": "LSE (FTSE)",             "keywords": ["lse", "ftse", "london stock exchange"]},
-    "tse":      {"label": "Tokyo (Nikkei)",         "keywords": ["nikkei", "tokyo stock exchange", "tse", "jpx"]},
-    "sse":      {"label": "Shanghai (CSI)",         "keywords": ["shanghai stock exchange", "sse", "csi 300"]},
-    "hkex":     {"label": "Hong Kong (Hang Seng)",  "keywords": ["hkex", "hang seng", "hong kong exchange"]},
-    "euronext": {"label": "Euronext (CAC/DAX)",     "keywords": ["euronext", "cac 40", "dax", "euro stoxx"]},
-    "sgx":      {"label": "SGX (Singapore)",        "keywords": ["sgx", "straits times index", "singapore exchange"]},
+    # Canada
+    "tsx":      {"label": "TSX (S&P/TSX)",          "keywords": ["tsx", "toronto stock exchange", "s&p/tsx", "tmx"]},
+    # United Kingdom
+    "lse":      {"label": "LSE (FTSE 100)",         "keywords": ["lse", "ftse", "london stock exchange"]},
+    # Germany
+    "xetra":    {"label": "XETRA (DAX)",            "keywords": ["xetra", "dax", "frankfurt stock exchange", "deutsche boerse", "deutsche börse"]},
+    # Australia
+    "asx":      {"label": "ASX (S&P/ASX 200)",      "keywords": ["asx", "australian securities exchange", "asx 200", "s&p/asx"]},
+    # Other major markets
+    "bse":      {"label": "BSE (Sensex)",            "keywords": ["bse", "sensex", "bombay stock exchange"]},
+    "nse":      {"label": "NSE (Nifty)",             "keywords": ["nse", "nifty", "national stock exchange"]},
+    "tse":      {"label": "Tokyo (Nikkei)",          "keywords": ["nikkei", "tokyo stock exchange", "tse", "jpx"]},
+    "sse":      {"label": "Shanghai (CSI)",          "keywords": ["shanghai stock exchange", "sse", "csi 300"]},
+    "hkex":     {"label": "Hong Kong (Hang Seng)",   "keywords": ["hkex", "hang seng", "hong kong exchange"]},
+    "euronext": {"label": "Euronext (CAC 40)",       "keywords": ["euronext", "cac 40", "euro stoxx"]},
+    "sgx":      {"label": "SGX (Singapore)",         "keywords": ["sgx", "straits times index", "singapore exchange"]},
 }
 
 # ==========================================
